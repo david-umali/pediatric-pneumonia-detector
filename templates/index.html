@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pneumonia Detector</title>
+</head>
+<body>
+  <h1>Chest X-Ray Classifier</h1>
+  <p>Upload a chest X-ray image to check for pneumonia.</p>
+ 
+  <form action="/predict" method="POST" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".png,.jpg,.jpeg" required />
+    <br><br>
+    <button type="submit">Classify</button>
+  </form>
+</body>
+</html>
