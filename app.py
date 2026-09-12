@@ -1,8 +1,6 @@
 from flask import Flask, request, render_template
 from tensorflow.keras.models import load_model
-from PIL import Image
-import numpy as np
-import io
+from preprocessing import preprocess_image
 
 app = Flask(__name__)
 
@@ -28,13 +26,12 @@ def predict():
 
     file = request.files["file"]
 
-    # Load and preprocess image
-    img = Image.open(io.BytesIO(file.read())).convert("RGB")
-    img = img.resize((input_width, input_height))
-
-    img_array = np.array(img, dtype=np.float32)
-    img_array = np.expand_dims(img_array, axis=0)
-    img_array = img_array / 255.0
+    # Prepare the uploaded image for the model
+    img_array = preprocess_image(
+        file.read(),
+        width=input_width,
+        height=input_height,
+    )
 
     # Predict
     prediction = model.predict(img_array, verbose=0)
