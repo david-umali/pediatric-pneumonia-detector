@@ -1,17 +1,28 @@
+import os
+from pathlib import Path
+
 from flask import Flask, request, render_template
-from tensorflow.keras.models import load_model
+
+from inference import PredictionService
 from preprocessing import preprocess_image
+
 
 app = Flask(__name__)
 
-# Load model once when the application starts
-model = load_model("model/cnn_best_100.h5")
+# Default to the model directory beside this Python file
+base_dir = Path(__file__).resolve().parent
+default_model_path = base_dir / "model" / "cnn_best_100.h5"
 
-# Get model input dimensions dynamically from model
-input_height = model.input_shape[1]
-input_width  = model.input_shape[2]
+# Allow the model location to be configured externally
+model_path = os.environ.get("MODEL_PATH", str(default_model_path))
 
-print(f"Model input size: {input_width} x {input_height}")
+# Load the model once per application process
+predictor = PredictionService(model_path)
+
+print(
+    f"Model input size: "
+    f"{predictor.input_width} x {predictor.input_height}"
+)
 
 
 @app.route("/")
@@ -22,25 +33,26 @@ def index():
 @app.route("/predict", methods=["POST"])
 def predict():
     if "file" not in request.files or request.files["file"].filename == "":
-        return render_template("index.html", error="Please select an image file.")
+        return render_template(
+            "index.html",
+            error="Please select an image file.",
+        )
 
     file = request.files["file"]
 
-    # Prepare the uploaded image for the model
     img_array = preprocess_image(
         file.read(),
-        width=input_width,
-        height=input_height,
+        width=predictor.input_width,
+        height=predictor.input_height,
     )
 
-    # Predict
-    prediction = model.predict(img_array, verbose=0)
-    score = float(prediction[0][0])
+    result = predictor.predict(img_array)
 
-    # Classify
-    label = "PNEUMONIA" if score >= 0.5 else "NORMAL"
-
-    return render_template("index.html", label=label, score=round(score, 4))
+    return render_template(
+        "index.html",
+        label=result["label"],
+        score=round(result["score"], 4),
+    )
 
 
 if __name__ == "__main__":

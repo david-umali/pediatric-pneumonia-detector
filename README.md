@@ -76,6 +76,29 @@ directory.
 
 The model is kept private and must be available locally for the application to perform predictions.
 
+### Model configuration
+
+By default, the application loads `model/cnn_best_100.h5` relative
+to `app.py`.
+
+Set `MODEL_PATH` to use a different model location.
+
+Bash / Zsh:
+
+```bash
+MODEL_PATH="/path/to/model.h5" python app.py
+```
+
+PowerShell:
+
+```powershell
+$env:MODEL_PATH = "C:\path\to\model.h5"
+python app.py
+```
+
+The model must support the application's existing input preprocessing
+and binary output interpretation.
+
 ## Running the Application
 
 Start the Flask application:
