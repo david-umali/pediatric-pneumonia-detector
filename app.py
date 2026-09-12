@@ -9,9 +9,9 @@ app = Flask(__name__)
 # Load model once when the application starts
 model = load_model("model/cnn_best_100.h5")
 
-# Get model input dimensions
+# Get model input dimensions dynamically from model
 input_height = model.input_shape[1]
-input_width = model.input_shape[2]
+input_width  = model.input_shape[2]
 
 print(f"Model input size: {input_width} x {input_height}")
 
@@ -23,13 +23,16 @@ def index():
 
 @app.route("/predict", methods=["POST"])
 def predict():
+    if "file" not in request.files or request.files["file"].filename == "":
+        return render_template("index.html", error="Please select an image file.")
+
     file = request.files["file"]
 
     # Load and preprocess image
     img = Image.open(io.BytesIO(file.read())).convert("RGB")
     img = img.resize((input_width, input_height))
 
-    img_array = np.array(img)
+    img_array = np.array(img, dtype=np.float32)
     img_array = np.expand_dims(img_array, axis=0)
     img_array = img_array / 255.0
 
@@ -38,16 +41,9 @@ def predict():
     score = float(prediction[0][0])
 
     # Classify
-    if score < 0.5:
-        label = "NORMAL"
-    else:
-        label = "PNEUMONIA"
+    label = "PNEUMONIA" if score >= 0.5 else "NORMAL"
 
-    return f"""
-    <h2>Prediction: {label}</h2>
-    <p>Score: {score:.4f}</p>
-    <a href="/">Test another image</a>
-    """
+    return render_template("index.html", label=label, score=round(score, 4))
 
 
 if __name__ == "__main__":

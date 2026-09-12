@@ -1,16 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Pneumonia Detector</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 60px auto;
+      padding: 0 20px;
+      background: #f5f5f5;
+    }
+    h1 { color: #222; margin-bottom: 6px; }
+    p.sub { color: #666; margin-bottom: 28px; font-size: 0.9rem; }
+
+    .upload-box {
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 28px;
+    }
+    input[type="file"] { margin-bottom: 14px; display: block; }
+
+    button {
+      padding: 10px 24px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+
+    .result {
+      margin-top: 24px;
+      padding: 20px 24px;
+      border-radius: 8px;
+      background: white;
+      border: 2px solid #ddd;
+    }
+    .result.NORMAL    { border-color: #16a34a; }
+    .result.PNEUMONIA { border-color: #dc2626; }
+
+    .result h2 { margin: 0 0 8px; }
+    .result.NORMAL    h2 { color: #16a34a; }
+    .result.PNEUMONIA h2 { color: #dc2626; }
+
+    .result p { margin: 0; color: #555; font-size: 0.9rem; }
+    .error { color: #dc2626; margin-top: 12px; font-size: 0.9rem; }
+  </style>
 </head>
 <body>
-  <h1>Chest X-Ray Classifier</h1>
-  <p>Upload a chest X-ray image to check for pneumonia.</p>
- 
-  <form action="/predict" method="POST" enctype="multipart/form-data">
-    <input type="file" name="file" accept=".png,.jpg,.jpeg" required />
-    <br><br>
-    <button type="submit">Classify</button>
-  </form>
+  <h1>Pneumonia Detector</h1>
+  <p class="sub">Upload a chest X-ray to classify it as Normal or Pneumonia.</p>
+
+  <div class="upload-box">
+    <form action="/predict" method="POST" enctype="multipart/form-data">
+      <label for="file"><strong>Select X-ray image:</strong></label><br><br>
+      <input type="file" id="file" name="file" accept=".png,.jpg,.jpeg" required />
+      <button type="submit">Classify X-ray</button>
+    </form>
+
+    {% if error %}
+      <p class="error">⚠ {{ error }}</p>
+    {% endif %}
+  </div>
+
+  {% if label %}
+  <div class="result {{ label }}">
+    <h2>{{ label }}</h2>
+    <p>Sigmoid score: <strong>{{ score }}</strong></p>
+    <p style="margin-top:8px">
+      {% if label == "PNEUMONIA" %}
+        Signs of pneumonia detected. Please consult a medical professional.
+      {% else %}
+        No signs of pneumonia detected.
+      {% endif %}
+    </p>
+  </div>
+  {% endif %}
+
 </body>
 </html>
