@@ -2,35 +2,40 @@
 
 A Python and Flask web application that uses a TensorFlow/Keras convolutional neural network (CNN) to classify pediatric chest X-ray images as **NORMAL** or **PNEUMONIA**.
 
-This project combines machine learning inference with a Python web application and is intended as an educational and portfolio project.
+This educational and portfolio project demonstrates Python image preprocessing, model inference, and web request handling. Planned improvements include automated testing, containerization, and Kubernetes deployment.
 
 ## Features
 
-* Upload chest X-ray images through a web interface
-* TensorFlow/Keras CNN inference
-* Automatic image preprocessing
-* Dynamic image resizing based on the trained model input dimensions
-* Pixel normalization using `1/255`
-* Binary classification using a 0.5 threshold
-* Flask-based web application
+- Browser-based image upload
+- Styled prediction results and upload error messages
+- TensorFlow/Keras model inference
+- Separate Python modules for preprocessing and prediction
+- Dynamic image resizing based on model input dimensions
+- RGB conversion and float32 pixel normalization
+- Binary classification using a 0.5 threshold
+- Configurable model location through `MODEL_PATH`
+- Model loading once per application process
+- Descriptive startup errors when model loading fails
 
 ## Technology Stack
 
-* Python 3.12
-* Flask
-* TensorFlow / Keras
-* NumPy
-* Pillow
-* HTML
-* Git
+- Python 3.12
+- Flask
+- TensorFlow / Keras
+- NumPy
+- Pillow
+- HTML / CSS
+- Git
 
 ## Project Structure
 
 ```text
 pediatric-pneumonia-detector/
 ├── app.py
+├── inference.py
+├── preprocessing.py
 ├── model/
-│   └── <trained-model>.h5
+│   └── cnn_best_100.h5
 ├── templates/
 │   └── index.html
 ├── requirements.txt
@@ -38,133 +43,208 @@ pediatric-pneumonia-detector/
 └── .gitignore
 ```
 
-> The trained model is kept private and is excluded from the Git repository using `.gitignore`.
+| File | Responsibility |
+| --- | --- |
+| `app.py` | Configure the application, handle requests, and render results |
+| `inference.py` | Load the model and return classification labels and scores |
+| `preprocessing.py` | Decode, resize, and normalize uploaded images |
+| `templates/index.html` | Display the upload form, results, and errors |
+| `requirements.txt` | Declare Python dependencies |
+
+The trained model is private and excluded from Git using `.gitignore`.
 
 ## Installation
 
-Clone the repository:
+### Clone the repository
 
 ```bash
-git clone git@github.com:YOUR_USERNAME/pediatric-pneumonia-detector.git
+git clone https://github.com/david-umali/pediatric-pneumonia-detector.git
 cd pediatric-pneumonia-detector
 ```
 
-Create and activate a Python virtual environment:
+### Create a virtual environment
 
 ```bash
 python -m venv .venv
+```
+
+Activate it using the command for your shell.
+
+**Bash / Zsh:**
+
+```bash
 source .venv/bin/activate
 ```
 
-Install the required dependencies:
+**PowerShell on Windows:**
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+### Install dependencies
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
-## Model
+### Provide the trained model
 
-The trained TensorFlow/Keras model is **not included in this repository**.
+The trained model is **not included in this repository**. Cloning the repository and installing dependencies alone will not enable predictions.
 
-The application expects a trained model to be available locally in the:
+Place a compatible model at:
 
 ```text
-model/
+model/cnn_best_100.h5
 ```
 
-directory.
+Alternatively, configure its location using `MODEL_PATH`.
 
-The model is kept private and must be available locally for the application to perform predictions.
+## Model Configuration
 
-### Model configuration
+By default, the application loads `model/cnn_best_100.h5` relative to `app.py`.
 
-By default, the application loads `model/cnn_best_100.h5` relative
-to `app.py`.
+Set `MODEL_PATH` to use a different location.
 
-Set `MODEL_PATH` to use a different model location.
-
-Bash / Zsh:
+**Bash / Zsh:**
 
 ```bash
 MODEL_PATH="/path/to/model.h5" python app.py
 ```
 
-PowerShell:
+**PowerShell:**
 
 ```powershell
 $env:MODEL_PATH = "C:\path\to\model.h5"
 python app.py
 ```
 
-The model must support the application's existing input preprocessing
-and binary output interpretation.
+To clear the setting in PowerShell:
+
+```powershell
+Remove-Item Env:MODEL_PATH
+```
+
+A relative `MODEL_PATH` is resolved from the current working directory. Use an absolute path when running the application from another directory.
+
+If the model cannot be loaded, the application stops during startup with an error identifying the configured path.
+
+### Model compatibility
+
+The current implementation assumes:
+
+- A single image input with shape `(batch, height, width, 3)`
+- Fixed image height and width
+- RGB images normalized to the range `0–1`
+- A single binary output score per image
+- The positive class represents `PNEUMONIA`
+
+Preprocessing and class interpretation must match the model's training configuration. These assumptions are not yet validated automatically.
 
 ## Running the Application
 
-Start the Flask application:
+From the project directory, run:
 
 ```bash
 python app.py
 ```
 
-The application will be available at:
+Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
+
+Select an image and click **Classify X-ray**. The page displays the classification label and model score.
+
+The application currently runs with Flask's development server and debug mode enabled. A production WSGI server is planned before deployment.
+
+## Request Flow
 
 ```text
-http://127.0.0.1:5000
+Browser uploads an image
+          |
+          v
+app.py receives POST /predict
+          |
+          v
+preprocessing.py prepares the image
+          |
+          v
+inference.py runs the model and selects a label
+          |
+          v
+app.py renders index.html with the result
 ```
 
-Open the address in a web browser and upload a supported chest X-ray image.
+### Image preprocessing
 
-## Model Input
-
-The trained CNN expects an input shape of:
-
-```text
-256 × 256 × 3
-```
+The application reads image dimensions from `model.input_shape`.
 
 Uploaded images are:
 
-1. Converted to RGB
-2. Resized to the model's expected dimensions
-3. Converted to a NumPy array
-4. Normalized by dividing pixel values by `255`
-5. Passed to the trained CNN for inference
+1. Decoded from the uploaded bytes
+2. Converted to RGB
+3. Resized to the model's expected width and height
+4. Converted to a NumPy array with dtype `float32`
+5. Given a batch dimension
+6. Normalized by dividing pixel values by `255`
 
-## Prediction
-
-The model produces a score between `0` and `1`.
-
-|    Score | Classification |
-| -------: | -------------- |
-|  `< 0.5` | NORMAL         |
-| `>= 0.5` | PNEUMONIA      |
-
-Example:
+The resulting array has shape:
 
 ```text
-0.0 ───────────── 0.5 ───────────── 1.0
-       NORMAL             PNEUMONIA
+(1, height, width, 3)
 ```
+
+For a model expecting 256 × 256 RGB images, this becomes:
+
+```text
+(1, 256, 256, 3)
+```
+
+### Prediction
+
+`PredictionService` loads the model during application startup and reuses it for requests within that process.
+
+The application interprets the first output value using this threshold:
+
+| Score | Classification |
+| --- | --- |
+| `< 0.5` | NORMAL |
+| `>= 0.5` | PNEUMONIA |
+
+This interpretation requires a compatible binary model whose positive class is pneumonia.
+
+The displayed score is rounded to four decimal places. It should not be interpreted as a clinically validated probability or confidence percentage.
+
+## Current Limitations
+
+- The trained model must be supplied separately.
+- Missing uploads and empty filenames are handled, but corrupted images and oversized uploads do not yet have dedicated error handling.
+- The file picker suggests PNG and JPEG files; this is not server-side image validation.
+- The application does not verify that an uploaded image is a chest X-ray.
+- Automated tests, health checks, and deployment configuration are not yet implemented.
 
 ## Development Roadmap
 
-* [x] Flask web application
-* [x] TensorFlow/Keras model inference
-* [x] Image preprocessing
-* [x] Browser-based image upload
-* [x] Model input validation
-* [ ] Automated tests with pytest
-* [ ] Docker containerization
-* [ ] Docker Compose configuration
-* [ ] GitHub Actions CI
-* [ ] Application health check
-* [ ] Production WSGI server
-* [ ] Improved error handling
+- [x] Flask web application
+- [x] TensorFlow/Keras model inference
+- [x] Browser-based image upload
+- [x] Styled results and missing-upload errors
+- [x] Extract image preprocessing into a Python module
+- [x] Extract model inference into a prediction service
+- [x] Configure model location through `MODEL_PATH`
+- [ ] Introduce a Flask application factory
+- [ ] Add image validation and upload limits
+- [ ] Add automated tests with pytest
+- [ ] Add a JSON prediction API
+- [ ] Add health checks and request logging
+- [ ] Automate tests and linting with GitHub Actions
+- [ ] Containerize the application with Docker
+- [ ] Configure a production WSGI server
+- [ ] Establish versioned model delivery for deployment
+- [ ] Deploy to local Kubernetes using kind
+- [ ] Add a Python deployment verification CLI
+- [ ] Document and rehearse updates, recovery, and rollback
 
 ## Disclaimer
 
 This project is for educational and demonstration purposes only. It is not a clinically validated medical diagnostic system and should not be used to make medical decisions.
 
 Chest X-ray interpretation and diagnosis should be performed by qualified healthcare professionals.
-
