@@ -45,7 +45,7 @@ pediatric-pneumonia-detector/
 
 | File | Responsibility |
 | --- | --- |
-| `app.py` | Configure the application, handle requests, and render results |
+| `app.py` | Create and configure Flask, accept a prediction dependency, and handle web routes |
 | `inference.py` | Load the model and return classification labels and scores |
 | `preprocessing.py` | Decode, resize, and normalize uploaded images |
 | `templates/index.html` | Display the upload form, results, and errors |
@@ -230,7 +230,7 @@ The displayed score is rounded to four decimal places. It should not be interpre
 - [x] Extract image preprocessing into a Python module
 - [x] Extract model inference into a prediction service
 - [x] Configure model location through `MODEL_PATH`
-- [ ] Introduce a Flask application factory
+- [x] Introduce a Flask application factory
 - [ ] Add image validation and upload limits
 - [ ] Add automated tests with pytest
 - [ ] Add a JSON prediction API
