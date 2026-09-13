@@ -311,6 +311,29 @@ Oversized requests use the error code `upload_too_large`.
 
 The API uses the same preprocessing and predictor as the HTML upload page.
 
+## Request Logging
+
+The application logs each completed request with:
+
+- A server-generated request ID
+- HTTP method and request path
+- Response status code
+- Processing duration in milliseconds
+
+The `X-Request-ID` response header matches the ID in the application log.
+
+Example log with a shortened request ID:
+
+```text
+request_completed request_id=abc123 method=GET path=/health/live status=200 duration_ms=0.18
+```
+
+Logs use key-value text formatting. Request logs do not include uploaded
+image contents or prediction scores.
+
+Duration measures application processing through response creation,
+not the complete network transfer.
+
 ## Current Limitations
 
 - Image validation checks format, readability, and size; it does not verify that an uploaded image is a chest X-ray.
@@ -331,7 +354,7 @@ The API uses the same preprocessing and predictor as the HTML upload page.
 - [x] Add a JSON prediction API
 - [x] Add application health endpoints
 - [x] Add health endpoint tests
-- [ ] Add request logging
+- [x] Add request logging
 - [ ] Automate tests and linting with GitHub Actions
 - [ ] Containerize the application with Docker
 - [ ] Configure a production WSGI server

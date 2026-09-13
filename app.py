@@ -1,7 +1,12 @@
 import os
+import logging
+import time
+import uuid
+
 from pathlib import Path
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, g, jsonify, render_template, request
+
 from werkzeug.exceptions import RequestEntityTooLarge
 
 from preprocessing import InvalidImageError, preprocess_image
@@ -27,6 +32,8 @@ def create_app(config=None, predictor=None):
     if config is not None:
         app.config.update(config)
 
+    app.logger.setLevel(logging.INFO)
+
     if predictor is None:
         from inference import PredictionService
 
@@ -37,6 +44,31 @@ def create_app(config=None, predictor=None):
         predictor.input_width,
         predictor.input_height,
     )
+
+    @app.before_request
+    def start_request_tracking():
+        g.request_id = uuid.uuid4().hex
+        g.request_started_at = time.perf_counter()
+
+    @app.after_request
+    def log_request(response):
+        duration_ms = (
+            time.perf_counter() - g.request_started_at
+        ) * 1000
+
+        response.headers["X-Request-ID"] = g.request_id
+
+        app.logger.info(
+            "request_completed request_id=%s method=%s path=%s "
+            "status=%s duration_ms=%.2f",
+            g.request_id,
+            request.method,
+            request.path,
+            response.status_code,
+            duration_ms,
+        )
+
+        return response
 
     def error_response(code, message, status):
         if request.path.startswith("/api/"):
