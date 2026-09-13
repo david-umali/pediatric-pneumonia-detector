@@ -330,7 +330,7 @@ The API uses the same preprocessing and predictor as the HTML upload page.
 - [x] Add automated tests with pytest
 - [x] Add a JSON prediction API
 - [x] Add application health endpoints
-- [ ] Add health endpoint tests
+- [x] Add health endpoint tests
 - [ ] Add request logging
 - [ ] Automate tests and linting with GitHub Actions
 - [ ] Containerize the application with Docker
