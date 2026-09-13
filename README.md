@@ -213,13 +213,44 @@ This interpretation requires a compatible binary model whose positive class is p
 
 The displayed score is rounded to four decimal places. It should not be interpreted as a clinically validated probability or confidence percentage.
 
+## Testing
+
+Install development dependencies:
+
+```bash
+python -m pip install -r requirements-dev.txt
+```
+
+Run automated tests:
+
+```bash
+python -m pytest -q
+```
+
+Tests use generated images and a fake predictor. They do not require the
+trained model and do not evaluate model accuracy.
+
+## Upload Limits
+
+Only decoded PNG and JPEG images are accepted.
+
+| Setting | Default | Purpose |
+| --- | --- | --- |
+| `MAX_CONTENT_LENGTH` | `10485760` bytes | Maximum total request size |
+| `MAX_IMAGE_PIXELS` | `16000000` pixels | Maximum source image pixel count |
+
+Both settings can be overridden through environment variables.
+
+Invalid images return HTTP 400. Requests exceeding the size limit
+return HTTP 413.
+
 ## Current Limitations
 
 - The trained model must be supplied separately.
-- Missing uploads and empty filenames are handled, but corrupted images and oversized uploads do not yet have dedicated error handling.
-- The file picker suggests PNG and JPEG files; this is not server-side image validation.
-- The application does not verify that an uploaded image is a chest X-ray.
-- Automated tests, health checks, and deployment configuration are not yet implemented.
+- Image validation checks format, readability, and size; it does not verify that an uploaded image is a chest X-ray.
+- Model input shape and output class mapping are assumed compatible and are not validated automatically.
+- Unexpected model inference failures do not yet have dedicated error handling.
+- Health checks, and deployment configuration are not yet implemented.
 
 ## Development Roadmap
 
