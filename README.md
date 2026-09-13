@@ -2,7 +2,7 @@
 
 A Python and Flask web application that uses a TensorFlow/Keras convolutional neural network (CNN) to classify pediatric chest X-ray images as **NORMAL** or **PNEUMONIA**.
 
-This educational and portfolio project demonstrates Python image preprocessing, model inference, and web request handling. Planned improvements include automated testing, containerization, and Kubernetes deployment.
+This educational and portfolio project demonstrates Python image preprocessing, model inference, and web request handling. Planned improvements include continuous integration, containerization, and Kubernetes deployment.
 
 ## Features
 
@@ -38,6 +38,8 @@ pediatric-pneumonia-detector/
 │   └── cnn_best_100.h5
 ├── templates/
 │   └── index.html
+├── tests/
+├── requirements-dev.txt
 ├── requirements.txt
 ├── README.md
 └── .gitignore
@@ -50,8 +52,6 @@ pediatric-pneumonia-detector/
 | `preprocessing.py` | Decode, resize, and normalize uploaded images |
 | `templates/index.html` | Display the upload form, results, and errors |
 | `requirements.txt` | Declare Python dependencies |
-
-The trained model is private and excluded from Git using `.gitignore`.
 
 ## Installation
 
@@ -90,7 +90,7 @@ python -m pip install -r requirements.txt
 
 ### Provide the trained model
 
-The trained model is **not included in this repository**. Cloning the repository and installing dependencies alone will not enable predictions.
+The trained model is private, excluded from Git using `.gitignore`, and **not included in this repository**. Supply a compatible model before running the application.
 
 Place a compatible model at:
 
@@ -175,8 +175,6 @@ app.py renders index.html with the result
 
 ### Image preprocessing
 
-The application reads image dimensions from `model.input_shape`.
-
 Uploaded images are:
 
 1. Decoded from the uploaded bytes
@@ -209,9 +207,7 @@ The application interprets the first output value using this threshold:
 | `< 0.5` | NORMAL |
 | `>= 0.5` | PNEUMONIA |
 
-This interpretation requires a compatible binary model whose positive class is pneumonia.
-
-The displayed score is rounded to four decimal places. It should not be interpreted as a clinically validated probability or confidence percentage.
+The score displayed on the HTML page is rounded to four decimal places; the API returns the score without this rounding. The score is a model output, not a clinically validated probability or confidence percentage.
 
 ## Testing
 
@@ -244,13 +240,57 @@ Both settings can be overridden through environment variables.
 Invalid images return HTTP 400. Requests exceeding the size limit
 return HTTP 413.
 
+## Prediction API
+
+### POST `/api/v1/predict`
+
+Submit an image using multipart form data with a field named `file`.
+
+```bash
+curl -F "file=@/path/to/xray.png" \
+  http://127.0.0.1:5000/api/v1/predict
+```
+
+On PowerShell, use `curl.exe`.
+
+Example successful response:
+
+```json
+{
+  "label": "NORMAL",
+  "score": 0.123456,
+  "model_version": "cnn_best_100"
+}
+```
+
+`MODEL_VERSION` is a configurable model identifier. It defaults to
+`cnn_best_100` and should be updated when using a different model.
+
+| Status | Meaning |
+| --- | --- |
+| 200 | Prediction completed |
+| 400 | Missing or invalid image |
+| 413 | Request exceeds the upload limit |
+
+Validation errors return:
+
+```json
+{
+  "error": {
+    "code": "invalid_image",
+    "message": "Please select an image file."
+  }
+}
+```
+
+Oversized requests use the error code `upload_too_large`.
+
+The API uses the same preprocessing and predictor as the HTML upload page.
+
 ## Current Limitations
 
-- The trained model must be supplied separately.
 - Image validation checks format, readability, and size; it does not verify that an uploaded image is a chest X-ray.
-- Model input shape and output class mapping are assumed compatible and are not validated automatically.
 - Unexpected model inference failures do not yet have dedicated error handling.
-- Health checks, and deployment configuration are not yet implemented.
 
 ## Development Roadmap
 
@@ -262,9 +302,9 @@ return HTTP 413.
 - [x] Extract model inference into a prediction service
 - [x] Configure model location through `MODEL_PATH`
 - [x] Introduce a Flask application factory
-- [ ] Add image validation and upload limits
-- [ ] Add automated tests with pytest
-- [ ] Add a JSON prediction API
+- [x] Add image validation and upload limits
+- [x] Add automated tests with pytest
+- [x] Add a JSON prediction API
 - [ ] Add health checks and request logging
 - [ ] Automate tests and linting with GitHub Actions
 - [ ] Containerize the application with Docker
@@ -279,3 +319,4 @@ return HTTP 413.
 This project is for educational and demonstration purposes only. It is not a clinically validated medical diagnostic system and should not be used to make medical decisions.
 
 Chest X-ray interpretation and diagnosis should be performed by qualified healthcare professionals.
+
