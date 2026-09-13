@@ -141,6 +141,30 @@ The current implementation assumes:
 
 Preprocessing and class interpretation must match the model's training configuration. These assumptions are not yet validated automatically.
 
+## Health Endpoints
+
+| Endpoint | Response |
+| --- | --- |
+| `GET /health/live` | `200 {"status": "alive"}` |
+| `GET /health/ready` | `200 {"status": "ready"}` |
+
+Both endpoints currently return HTTP 200 whenever the application can
+respond. The model loads synchronously before Flask starts serving
+requests, so a responding application has completed model initialization.
+
+During model loading, neither endpoint is available. If initialization
+fails, the application does not start.
+
+The routes are separate so readiness behavior can evolve independently
+of liveness. Neither endpoint runs a prediction or verifies model accuracy.
+
+Check the endpoints:
+
+```bash
+curl -i http://127.0.0.1:5000/health/live
+curl -i http://127.0.0.1:5000/health/ready
+```
+
 ## Running the Application
 
 From the project directory, run:
@@ -305,7 +329,9 @@ The API uses the same preprocessing and predictor as the HTML upload page.
 - [x] Add image validation and upload limits
 - [x] Add automated tests with pytest
 - [x] Add a JSON prediction API
-- [ ] Add health checks and request logging
+- [x] Add application health endpoints
+- [ ] Add health endpoint tests
+- [ ] Add request logging
 - [ ] Automate tests and linting with GitHub Actions
 - [ ] Containerize the application with Docker
 - [ ] Configure a production WSGI server

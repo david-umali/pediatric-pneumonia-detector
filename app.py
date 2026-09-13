@@ -86,6 +86,14 @@ def create_app(config=None, predictor=None):
             status=400,
         )
 
+    @app.route("/health/live", methods=["GET"])
+    def health_live():
+        return jsonify(status="alive"), 200
+
+    @app.route("/health/ready", methods=["GET"])
+    def health_ready():
+        return jsonify(status="ready"), 200
+
     @app.route("/")
     def index():
         return render_template("index.html")
