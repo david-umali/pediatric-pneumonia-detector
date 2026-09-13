@@ -32,12 +32,15 @@ This educational and portfolio project demonstrates Python image preprocessing, 
 ```text
 pediatric-pneumonia-detector/
 ├── app.py
-├── inference.py
-├── preprocessing.py
+├── pneumonia_detector/
+│   ├── __init__.py
+│   ├── application.py
+│   ├── inference.py
+│   ├── preprocessing.py
+│   └── templates/
+│       └── index.html
 ├── model/
 │   └── cnn_best_100.h5
-├── templates/
-│   └── index.html
 ├── tests/
 ├── requirements-dev.txt
 ├── requirements.txt
@@ -47,10 +50,11 @@ pediatric-pneumonia-detector/
 
 | File | Responsibility |
 | --- | --- |
-| `app.py` | Create and configure Flask, accept a prediction dependency, and handle web routes |
-| `inference.py` | Load the model and return classification labels and scores |
-| `preprocessing.py` | Decode, resize, and normalize uploaded images |
-| `templates/index.html` | Display the upload form, results, and errors |
+| `app.py` | Expose the application factory and start the development server |
+| `pneumonia_detector/application.py` | Create and configure Flask, accept a prediction dependency, and handle web routes |
+| `pneumonia_detector/inference.py` | Load the model and return classification labels and scores |
+| `pneumonia_detector/preprocessing.py` | Decode, resize, and normalize uploaded images |
+| `pneumonia_detector/templates/index.html` | Display the upload form, results, and errors |
 | `requirements.txt` | Declare Python dependencies |
 
 ## Installation
@@ -185,7 +189,7 @@ The application currently runs with Flask's development server and debug mode en
 Browser uploads an image
           |
           v
-app.py receives POST /predict
+pneumonia_detector/application.py receives POST /predict
           |
           v
 preprocessing.py prepares the image
@@ -194,7 +198,7 @@ preprocessing.py prepares the image
 inference.py runs the model and selects a label
           |
           v
-app.py renders index.html with the result
+pneumonia_detector/application.py renders index.html with the result
 ```
 
 ### Image preprocessing

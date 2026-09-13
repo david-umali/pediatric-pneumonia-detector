@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from preprocessing import InvalidImageError, preprocess_image
+from pneumonia_detector.preprocessing import InvalidImageError, preprocess_image
 
 
 def test_converts_grayscale_to_normalized_rgb_batch(make_image):
