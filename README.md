@@ -2,7 +2,7 @@
 
 A Python and Flask web application that uses a TensorFlow/Keras convolutional neural network (CNN) to classify pediatric chest X-ray images as **NORMAL** or **PNEUMONIA**.
 
-This educational and portfolio project demonstrates Python image preprocessing, model inference, and web request handling. Planned improvements include continuous integration, containerization, and Kubernetes deployment.
+This educational and portfolio project demonstrates Python image preprocessing, model inference, and web request handling. Planned improvements include continuous integration and Kubernetes deployment.
 
 ## Features
 
@@ -32,6 +32,10 @@ This educational and portfolio project demonstrates Python image preprocessing, 
 ```text
 pediatric-pneumonia-detector/
 ├── app.py
+├── docker/
+│   ├── Dockerfile
+│   ├── Dockerfile.dockerignore
+│   └── README.md
 ├── pneumonia_detector/
 │   ├── __init__.py
 │   ├── application.py
@@ -56,6 +60,11 @@ pediatric-pneumonia-detector/
 | `pneumonia_detector/preprocessing.py` | Decode, resize, and normalize uploaded images |
 | `pneumonia_detector/templates/index.html` | Display the upload form, results, and errors |
 | `requirements.txt` | Declare Python dependencies |
+
+## Run with Docker
+
+See [Docker instructions](docker/README.md) to build the image and run the app
+at http://localhost:8000 with your trained model mounted into the container.
 
 ## Installation
 
@@ -360,7 +369,7 @@ not the complete network transfer.
 - [x] Add health endpoint tests
 - [x] Add request logging
 - [ ] Automate tests and linting with GitHub Actions
-- [ ] Containerize the application with Docker
+- [x] Containerize the application with Docker
 - [ ] Configure a production WSGI server
 - [ ] Establish versioned model delivery for deployment
 - [ ] Deploy to local Kubernetes using kind

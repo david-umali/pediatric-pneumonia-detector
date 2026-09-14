@@ -1,0 +1,7 @@
+**
+!requirements.txt
+!app.py
+!pneumonia_detector/
+!pneumonia_detector/**
+pneumonia_detector/**/__pycache__/
+pneumonia_detector/**/*.pyc
