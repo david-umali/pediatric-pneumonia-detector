@@ -1,0 +1,24 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+
+    image: pneumonia-detector:latest
+
+    ports:
+      - "127.0.0.1:8000:8000"
+
+    environment:
+      MODEL_PATH: /app/model/cnn_best_100.h5
+      MODEL_VERSION: cnn_best_100
+
+    volumes:
+      - type: bind
+        source: ../model
+        target: /app/model
+        read_only: true
+        bind:
+          create_host_path: false
+
+    restart: unless-stopped

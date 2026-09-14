@@ -35,6 +35,7 @@ pediatric-pneumonia-detector/
 ├── docker/
 │   ├── Dockerfile
 │   ├── Dockerfile.dockerignore
+│   ├── compose.yaml
 │   └── README.md
 ├── pneumonia_detector/
 │   ├── __init__.py
@@ -63,8 +64,16 @@ pediatric-pneumonia-detector/
 
 ## Run with Docker
 
-See [Docker instructions](docker/README.md) to build the image and run the app
-at http://localhost:8000 with your trained model mounted into the container.
+With Docker and the Compose plugin installed, place the trained model at
+`model/cnn_best_100.h5`. From the repository root, run:
+
+```bash
+docker compose -f docker/compose.yaml up --build -d
+```
+
+Open http://localhost:8000 once the model has loaded. The model directory is
+mounted read-only. See [Docker instructions](docker/README.md) for logs, status,
+shutdown, configuration, and running without Compose.
 
 ## Installation
 
@@ -190,7 +199,8 @@ Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
 
 Select an image and click **Classify X-ray**. The page displays the classification label and model score.
 
-The application currently runs with Flask's development server and debug mode enabled. A production WSGI server is planned before deployment.
+Running `python app.py` uses Flask's development server with debug mode enabled.
+The Docker setup uses Gunicorn on port 8000.
 
 ## Request Flow
 
@@ -370,7 +380,7 @@ not the complete network transfer.
 - [x] Add request logging
 - [ ] Automate tests and linting with GitHub Actions
 - [x] Containerize the application with Docker
-- [ ] Configure a production WSGI server
+- [x] Configure a production WSGI server
 - [ ] Establish versioned model delivery for deployment
 - [ ] Deploy to local Kubernetes using kind
 - [ ] Add a Python deployment verification CLI
